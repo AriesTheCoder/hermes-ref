@@ -40,7 +40,7 @@ Native Ref tools remain available for comments, PR links, review and authorised 
 
 Investigation, implementation, research, fix, deploy and plan language classifies substantive requests. `[ref-plan]` forces the workflow; `[no-ref]` skips this turn. Routine conversation creates nothing. The keyword heuristic can miss implicit requests or match incidental words; use explicit prefixes when necessary.
 
-Skills, discovery, clarification and native Ref tools stay available before binding. Other tools on classified turns are blocked until begin/bind/read succeeds. After execution, a verified workspace update is needed for a clean handover. Gates check ordering, NOT content quality, authorisation or factual correctness. Nested wrappers/native Ref tools are not a security sandbox. The footer reports gaps without forcing extra model turns.
+Skills, discovery, clarification and native Ref tools stay available before binding. Other tools on classified turns are blocked until begin/bind/read succeeds. A bound-session follow-up also requires a fresh read before execution, including an implicit “continue” request. After execution, a verified workspace update is needed for a clean handover. Gates check ordering, NOT content quality, authorisation or factual correctness. Nested wrappers/native Ref tools are not a security sandbox. The footer reports gaps without forcing extra model turns.
 
 Settings: `plugins.entries.hermes-ref.settings.enabled` (true) and `.server` (`ref-plan`). Frozen startup guidance plus dynamic pre-LLM context. Restart to unload old callbacks or guidance.
 

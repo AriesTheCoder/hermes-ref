@@ -1,100 +1,73 @@
 # Hermes Ref
 
-A native [Hermes Agent](https://github.com/NousResearch/hermes-agent) plugin that makes substantive outcomes land in [Ref Plans](https://plan.ref.tools), without relying solely on the model remembering to document them.
+A native Hermes Agent integration for [Ref Plans](https://docs.ref.tools/plans/getting-started/intro): **the doc is the state; chat is the action.** Plan before execution, keep decisions reviewable, and maintain the same document during work and handover.
 
-**Startup guidance + automatic private outcome recording + exact read-back verification.** No extra model, raw-transcript recorder, background daemon or independent MCP connection.
+## Workflow
 
-## How it works
+1. `ref_workspace discover` loads live authoring guidance and lists existing refs. Page with `offset`; compare subject/project before selecting.
+2. `bind` reads an existing ref, or `begin` creates a private agent-authored outline with Scope, Decisions, Tasks and Verification. Exact read-back establishes readiness.
+3. Substantive tool execution is gated until the working ref is established/read.
+4. `update` performs a unique exact Edit to the SAME ref, reads it back, and verifies progress, evidence, decisions or blockers before handover.
+5. Finish with a concise answer and `📖 Ready to read → <url>`. Missing steps produce an incomplete-workflow notice, never an answer archive.
 
-1. A cache-safe system-prompt section encourages the agent to load Ref's writing guidance, update relevant refs and verify its writes.
-2. Per-turn hooks count tool calls without retaining arguments or output. A turn qualifies after **3 tool calls OR 1,200 response characters**. Prefix a message with `[ref-record]` to force it, or `[no-ref]` to skip it.
-3. If the agent mutated a ref in that turn and links it in the answer, the plugin independently reads it back. Otherwise it saves the final answer as a **private outcome record** and reads back the exact content.
-4. A verified record gets a visible link appended to the final answer. Failures produce a visible incomplete-record notice instead of a false success.
-
-An outcome record preserves the answer; it does **not** independently verify the answer's factual claims. An agent-authored document is preferred for substantial multi-step work. Ordinary short conversation is not recorded.
-
-## Requirements
-
-- A recent Hermes build exposing `register_system_prompt_section`, `pre_llm_call`, `post_tool_call`, `transform_llm_output` (including `turn_id`) and `ctx.call_mcp`.
-- A configured Ref Plans MCP server and a Ref API key.
-- Explicit per-plugin MCP permission for that server.
-- Python standard library only; no additional dependencies.
-
-Hook behaviour is shared by the normal Hermes agent loop used by CLI, TUI/desktop and gateway. Native Codex-app-server runtime, other output-transform plugins, interrupted turns and already-streamed text need separate surface acceptance; this plugin does not claim every runtime emits identical hooks. A late footer may appear only in the final response, not streamed deltas.
+Follow-ups read the bound ref before work. New sessions explicitly bind the relevant document. Project switches discover and bind another ref; a previous session pointer is not proof of project relevance.
 
 ## Install
 
-First configure Ref Plans in your **active profile**, using the [official installation instructions](https://docs.ref.tools/plans/install/index.md). Keep the key in private environment storage, never in a repository.
+Configure Ref Plans MCP/private credentials using the [official guide](https://docs.ref.tools/plans/install/index.md), then:
 
 ```sh
 hermes plugins install AriesTheCoder/hermes-ref --enable
 hermes config set plugins.entries.hermes-ref.mcp_allowlist '["ref-plan"]'
 ```
 
-Restart the CLI/TUI or the appropriate gateway process. Installing the files does not hot-load hooks into an existing session. Use `--ref <full-40-character-commit>` for an immutable installation.
+Restart Hermes. Merge [examples/config.yaml](examples/config.yaml), never replace your config. Pin `--ref <40-character-commit>` for reproducibility. This uses Hermes' native MCP client with no extra dependencies or daemon.
 
-See [examples/config.yaml](examples/config.yaml) for the complete configuration shape. **Merge it with your existing config, do not replace your config.** The plugin uses Hermes' configured MCP client and credentials; it never reads `~/.ref/config.json` or opens a second connection.
+## Workspace tool
 
-If your MCP server has another name:
-
-```sh
-hermes config set plugins.entries.hermes-ref.settings.server 'your-ref-server'
-hermes config set plugins.entries.hermes-ref.mcp_allowlist '["your-ref-server"]'
-```
-
-## Settings
-
-Under `plugins.entries.hermes-ref.settings`:
-
-| Setting | Default | Meaning |
+| Action | Inputs | Behaviour |
 |---|---|---|
-| `enabled` | `true` | Disable guidance-independent recording without removing the plugin |
-| `server` | `ref-plan` | Existing Hermes MCP server name |
-| `min_tools` | `3` | Tool-call threshold; counts error/blocked calls too because investigation is still work |
-| `min_chars` | `1200` | Final-answer character threshold, alternative to tool count |
-| `max_chars` | `12000` | Maximum saved answer length, bounded to 1,000–20,000; truncation is explicitly marked |
+| `discover` | optional `offset` | Load ListSkills/writing guidance and list refs |
+| `begin` | `title`, `content` | Create private structured outline after discovery, then verify |
+| `bind` | `plan_id` | Read and bind selected existing ref after discovery |
+| `read` | none | Read working document for follow-up context |
+| `update` | `old_string`, `new_string` | Read, unique exact Edit, exact read-back |
+| `status` | none | Session pointer and current workflow state |
 
-`[no-ref]` / `[ref-record]` are literal message prefixes, not slash commands. Skip overrides every threshold. These settings are read per turn; startup guidance remains frozen until a new session. Disabling/uninstalling the plugin requires a new process for existing hook registrations to go away.
+Native Ref tools remain available for comments, PR links, review and authorised agent coordination. Load the relevant live skills before use. Native edits alone do not satisfy the plugin's progress flag: finish with a meaningful workspace update. No automatic agent launches, approval, sharing changes or merges.
 
-## Privacy and failure semantics
+## Gating and controls
 
-Enabling this plugin **authorises private uploads of qualifying final answers and a short redacted request-derived title** to your Ref account. Private visibility is explicitly requested on every Create. Public GitHub source code does not make your Ref records public.
+Investigation, implementation, research, fix, deploy and plan language classifies substantive requests. `[ref-plan]` forces the workflow; `[no-ref]` skips this turn. Routine conversation creates nothing. The keyword heuristic can miss implicit requests or match incidental words; use explicit prefixes when necessary.
 
-- No chain-of-thought, transcript, raw tool arguments/results, source files, credentials or personal runtime configuration are intentionally captured. The final answer can still contain personal/client information: use `[no-ref]`, disable recording, or do not enable the plugin where uploads are inappropriate.
-- Common key/token/private-key patterns receive best-effort redaction. This is not a complete secret detector or DLP boundary. Never put secrets in an answer.
-- Local SQLite state stores only turn hashes, status, content hash, ref ID/URL and timestamps, under `$HERMES_HOME/plugin-state/hermes-ref/`, with restrictive permissions. It does not store answer bodies.
-- Atomic per-turn claims prevent repeated hook delivery from issuing duplicate Creates. A crash or ambiguous timeout is **not retried automatically**, because the server might already have created the ref. Metadata can remain `pending`, `creating`, `uncertain` or `created` until an operator inspects it.
-- Create and Read each have an 8-second host-client timeout. Hermes' outer hook timeout can abandon a callback earlier if you configure it below the combined budget; do not lower it below 20 seconds for this plugin. A killed process or an outer timeout can prevent a visible footer even if a write completed. Inspect local status and Ref before manually retrying.
-- Another output-transform plugin can take precedence over the footer. Avoid competing transforms if the footer is required. No infinite nudges or hidden follow-up model turns.
+Skills, discovery, clarification and native Ref tools stay available before binding. Other tools on classified turns are blocked until begin/bind/read succeeds. After execution, a verified workspace update is needed for a clean handover. Gates check ordering, NOT content quality, authorisation or factual correctness. Nested wrappers/native Ref tools are not a security sandbox. The footer reports gaps without forcing extra model turns.
 
-## Check your installation
+Settings: `plugins.entries.hermes-ref.settings.enabled` (true) and `.server` (`ref-plan`). Frozen startup guidance plus dynamic pre-LLM context. Restart to unload old callbacks or guidance.
 
-```sh
-hermes plugins doctor hermes-ref
-hermes plugins show hermes-ref
-```
+## Migration from 0.1.0
 
-In a **fresh** Hermes session, ask:
+**0.1.0 implemented the wrong workflow: final-answer recording instead of Ref Plans. 0.2.0 removes that recorder.** No final answer uploads, character/tool-count triggers or answer fallback remain.
 
-```text
-[ref-record] Explain the difference between an outcome record and a raw transcript in four sentences. Do not call tools or create a ref yourself.
-```
+Reinstall with `--force --enable`, preserve the MCP grant, then restart. Old threshold settings are ignored. `[ref-record]` is a deprecated alias for plan-first gating, NOT answer recording. `ref_record_status` is replaced by `ref_workspace status`. Historical documents and `records.sqlite3` are retained untouched; no automatic conversion/deletion occurs.
 
-The final answer should include a `https://plan.ref.tools/...` record link generated by the plugin. Read the actual target in Ref and confirm it contains the answer, is private, and only one document was created. Then ask a short `[no-ref]` question and confirm no new record appears. The `ref_record_status` tool shows local metadata and incomplete writes; it does not retry them.
+## Privacy and failures
 
-## Development
+Only explicit model-authored outline/update calls write content. No automatic transcript/reasoning/final-answer capture and no automatic DLP claim. Authors must keep secrets out of documents.
+
+Profile-local `workspace.sqlite3` stores hashed session IDs, ref IDs and Create-attempt statuses, not document bodies. Begin attempts are claimed before Create. Ambiguous Creates never repeat automatically; returned IDs are retained even if verification fails. Read and reconcile before retrying. Updates reject stale/ambiguous old text; uncertain Edit outcomes also need read-back before retry.
+
+Each MCP call has an eight-second timeout; discover makes three sequential calls. Hooks make no remote writes. Current Hermes supplies session ID to tool handlers but keeps turn ID in the tool observability context; the plugin uses that context as a compatibility fallback.
+
+## Verification
+
+See [VERIFICATION.md](VERIFICATION.md). Compile and validate:
 
 ```sh
 python3 -m py_compile __init__.py
 hermes plugins validate . --json
+hermes plugins doctor hermes-ref
 ```
 
-See [VERIFICATION.md](VERIFICATION.md) for observed real execution and surface limits.
+Normal CLI verification does not establish separate TUI/gateway/native Codex-app-server/streaming acceptance. Other output transforms can suppress the footer. Workflow enforcement is not a security boundary.
 
-Use focused runtime probes and a real private Ref canary before changing recording semantics. The repository intentionally does not introduce an automated test runner or dependencies.
-
-Contributions should preserve profile isolation, bounded execution, explicit private visibility, exact read-back verification and no automatic retry after ambiguous creates. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
-
-## Licence
-
-MIT. This is an independent community integration, not an official Ref or Nous Research plugin.
+MIT. Independent community integration, not official Ref or Nous Research software.

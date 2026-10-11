@@ -1,5 +1,13 @@
 # Verification
 
+## 0.2.0 correction
+
+The plan-first implementation passed Python compilation, plugin manifest/registration validation and focused synthetic ordering probes. These covered private outlines and exact read-back, verified edits, missing-progress reporting, no footer writes, follow-up reads, opt-out, ambiguous Create no-repeat, persistent binding and session isolation. Real CLI acceptance is pending until documented below.
+
+## Historical 0.1.0 verification
+
+The checks below proved answer recording worked, not alignment with Ref Plans. They are not acceptance evidence for 0.2.0.
+
 Version 0.1.0 was exercised against an installed Hermes Agent build on 11 October 2026.
 
 ## Observed execution

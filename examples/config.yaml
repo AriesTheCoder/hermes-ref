@@ -15,6 +15,3 @@ plugins:
       settings:
         enabled: true
         server: ref-plan
-        min_tools: 3
-        min_chars: 1200
-        max_chars: 12000

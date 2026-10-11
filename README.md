@@ -89,6 +89,8 @@ python3 -m py_compile __init__.py
 hermes plugins validate . --json
 ```
 
+See [VERIFICATION.md](VERIFICATION.md) for observed real execution and surface limits.
+
 Use focused runtime probes and a real private Ref canary before changing recording semantics. The repository intentionally does not introduce an automated test runner or dependencies.
 
 Contributions should preserve profile isolation, bounded execution, explicit private visibility, exact read-back verification and no automatic retry after ambiguous creates. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).

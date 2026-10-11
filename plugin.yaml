@@ -1,0 +1,9 @@
+name: hermes-ref
+version: "0.1.0"
+description: Private, verified Ref outcome records and cache-safe writing guidance for Hermes Agent.
+author: AriesTheCoder
+license: MIT
+homepage: https://github.com/AriesTheCoder/hermes-ref
+tags: [ref, documentation, hooks, continuity]
+provides_hooks: [pre_llm_call, post_tool_call, transform_llm_output]
+provides_tools: [ref_record_status]

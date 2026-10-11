@@ -1,0 +1,20 @@
+# Merge with your existing configuration. Never replace it wholesale.
+# Supply REF_API_KEY through the active profile's private environment.
+mcp_servers:
+  ref-plan:
+    url: https://api.plan.ref.tools/mcp
+    headers:
+      x-ref-api-key: ${REF_API_KEY}
+    enabled: true
+plugins:
+  enabled:
+    - hermes-ref
+  entries:
+    hermes-ref:
+      mcp_allowlist: [ref-plan]
+      settings:
+        enabled: true
+        server: ref-plan
+        min_tools: 3
+        min_chars: 1200
+        max_chars: 12000

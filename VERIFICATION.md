@@ -1,5 +1,34 @@
 # Verification
 
+## 0.3.0 source acceptance
+
+Pre-release source acceptance used Linux, Python 3.14.7 and Hermes `v0.22.2+963` at source revision `bebe448a2bdb57043ca8ebd820807bf7eed6320d`. The checks below did not replace the installed plugin or already-running conversation. Published-commit installation and fresh-session activation results are recorded separately in the [0.3.0 release notes](https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.3.0).
+
+| Layer | Observed result |
+|---|---|
+| Compilation | `python3 -m py_compile __init__.py workspace.py storage.py schemas.py` passed. |
+| Admission | `hermes plugins validate . --json` returned `ok: true` with no warnings, valid settings/compatibility metadata and matching tool/hook/middleware declarations. The old private-import warning is gone. |
+| Real registration | `hermes plugins doctor . --ci` passed: one tool, four hooks and declared execution middleware. |
+| Real loader/dispatch, synthetic external transport | Disposable-home probe passed no registration state I/O, namespaced skill/support-file discovery, public middleware identity, pre-read enforcement/follow-ups/opt-out, exact updates, cached discovery and copied worker context. |
+| Local state and invalid input | Focused probes passed invalid argument/settings refusal before service I/O, persisted create no-repeat, bounded cache retention, finalize/unload cleanup, read-only legacy import with unchanged source checksum, and separate-profile state. |
+| Handler concurrency | Twelve workspace binds from four workers completed through session locks. This was direct handler/middleware acceptance, not simultaneous full-host lifecycle acceptance. |
+| Independent-review corrections | Focused probes passed profile/server-separated discovery/session state and bindings, delivery of a cached page not yet seen by the turn, clearing readiness/snapshots after failed creation read-back while retaining the ID, and withholding bearer/quoted credential values from upstream failures. |
+| Live integration | Native `PluginContext.call_mcp` and real `model_tools` dispatch created one private canary, verified an exact same-ref update and read it through a fresh Workspace using the persisted binding. A separate native Ref Read confirmed the final document. No transcript or final answer was uploaded. |
+
+After the review corrections, the final source repeated only read-only live bind/read/follow-up acceptance against the existing canary; no additional document was created and the completed mutation was not repeated. The review's earlier documentation/coverage comments described the work-in-progress snapshot; current operator docs and this record replace those historical descriptions.
+
+The support floor `>=0.22.0` is based on inspecting required public middleware, storage, skill, prompt and unload contracts in tags v0.22.0, v0.22.1 and v0.22.2. This is source compatibility investigation, not runtime execution on all three releases.
+
+### Boundaries and host findings
+
+- Native in-process loader/tool execution is exercised. Separate interactive CLI, TUI/Desktop, messaging gateway, native Codex-app-server, isolated-plugin-host and competing-output-transform journeys are not accepted end-to-end for this candidate.
+- The installed Hermes loader logs `provides_middleware` as an unknown v2 manifest field even though its admission validator requires that declaration and successfully checks it. Registration and dispatch succeed. This is a host metadata inconsistency, not a hidden private import; no core patch or declaration removal was used to suppress it.
+- An initial simultaneous full-host hook probe encountered Hermes's busy-callback policy: overlapping observers may be skipped and policy callbacks blocked. The passing concurrent check above deliberately isolates handler-level state safety; it does not claim the host policy was changed.
+- The first live harness omitted native MCP startup discovery and failed before creating anything. After invoking the normal discovery step, one live canary succeeded. No uncertain creation was retried.
+- No automated suite, fixtures, runner, test dependency or CI workflow was added. Probes are disposable research artifacts outside the repository. No dependency-install lane, production journal migration or installed-plugin replacement was performed.
+
+Earlier version evidence below is historical and does not establish additional 0.3.0 coverage.
+
 ## 0.2.2 current API and latency correction
 
 Real runtime acceptance used Hermes' actual `PluginContext.call_mcp`, native MCP client and authenticated Ref Plans service. A known-ID bind needed one Read without discovery. An existing operational ref was updated through Write prepare/apply and exact read-back. A single private canary verified Write create, returned `planId`, an exact progress edit, and a fresh Workspace reading the persisted binding. No retired Create/Edit calls were issued.

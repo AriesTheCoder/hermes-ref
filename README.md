@@ -1,73 +1,104 @@
 # Hermes Ref
 
-A native Hermes Agent integration for [Ref Plans](https://docs.ref.tools/plans/getting-started/intro): **the doc is the state; chat is the action.** Plan before execution, keep decisions reviewable, and maintain the same document during work and handover.
+Keep a shared working document alongside substantial work in Hermes Agent. Hermes Ref connects the agent to [Ref Plans](https://docs.ref.tools/plans/getting-started/intro), where it can write the plan, record decisions and update progress in the same document.
 
-## Workflow
+You get a short chat response with a link to the working document. When you continue the work, the agent reads that document for context.
 
-1. `ref_workspace discover` loads live authoring guidance and lists existing refs. Page with `offset`; compare subject/project before selecting.
-2. `bind` reads an existing ref, or `begin` creates a private agent-authored outline with Scope, Decisions, Tasks and Verification. Exact read-back establishes readiness.
-3. Substantive tool execution is gated until the working ref is established/read.
-4. `update` performs a unique exact Edit to the SAME ref, reads it back, and verifies progress, evidence, decisions or blockers before handover.
-5. Finish with a concise answer and `📖 Ready to read → <url>`. Missing steps produce an incomplete-workflow notice, never an answer archive.
+## What it does
 
-Follow-ups read the bound ref before work. New sessions explicitly bind the relevant document. Project switches discover and bind another ref; a previous session pointer is not proof of project relevance.
+The plugin gives Hermes a `ref_workspace` tool and guidance for using Ref Plans during investigations, implementation and shared delivery.
+
+| Stage | What happens |
+|---|---|
+| Start work | The agent finds an existing document or creates a private outline with scope, decisions, tasks and verification criteria. |
+| Continue work | The agent reads the selected document before acting on a follow-up. |
+| Record progress | The agent edits the same document with evidence, decisions or blockers. The workspace tool reads changes back to verify they landed. |
+| Hand over | The agent returns a concise answer and the document link. |
+
+The agent is responsible for choosing the right document and writing useful content. The plugin supplies the tools and workflow guidance; it does not automatically produce a plan for every message.
+
+## Example
+
+For a request such as “Investigate why deployment fails and fix the cause”, the intended workflow is:
+
+```text
+Find or create the working document
+                 ↓
+Read the plan and investigate the problem
+                 ↓
+Make the fix and check the result
+                 ↓
+Update the same document with findings and evidence
+                 ↓
+Reply in chat with the document link
+```
+
+A later “Continue the deployment fix” uses the same document. In a new session, the agent must explicitly select it again. Switching projects means selecting the document for that project.
+
+Routine questions and small operational changes do not need a Ref document.
+
+## What happens automatically?
+
+The plugin adds workflow guidance to Hermes. Document creation and edits happen through explicit agent tool calls.
+
+It does not automatically upload your conversation, reasoning or final answer. It does not launch other agents, change document sharing, approve work or merge changes. Its local database stores session-to-document pointers and creation-attempt statuses, not document bodies.
+
+Explicit document actions use your configured Ref Plans MCP connection, normally `https://api.plan.ref.tools/mcp`. The per-server MCP grant can include write-capable tools; it is not a read-only grant. New documents are private at creation; binding an existing document leaves its sharing unchanged. There is no plugin telemetry, shell execution or background daemon. See [SECURITY.md](SECURITY.md) for the complete data flow and retention policy.
+
+## Default behaviour and controls
+
+Advisory mode is the default. Hermes can continue working if Ref is unavailable, and the plugin does not block execution.
+
+You can put either prefix at the start of a message:
+
+| Prefix | Effect |
+|---|---|
+| `[ref-plan]` | Explicitly request the shared-document workflow for this turn. It does not enable blocking. |
+| `[no-ref]` | Skip the plugin's workflow for this turn. |
+
+Optional enforcement can block execution tools until the working document has been established or read. It checks ordering, not plan quality or factual correctness. See the [configuration reference](docs/reference.md#configuration) before enabling it.
 
 ## Install
 
-Configure Ref Plans MCP/private credentials using the [official guide](https://docs.ref.tools/plans/install/index.md), then:
+The supported Hermes floor is `0.22.0`: the required public middleware, prompt, skill and storage contracts were checked in that release's source. Runtime acceptance currently covers Linux on Hermes `0.22.2+963`. Separate interactive CLI, TUI/Desktop, messaging gateway, native Codex-app-server and isolated-plugin-host journeys are not claimed. See the [verification matrix](VERIFICATION.md).
+
+Version `0.3.0` uses public call-identity middleware and includes a bundled workflow skill. Release-specific installation and activation evidence is recorded in the [release notes](https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.3.0).
+
+First configure the Ref Plans MCP connection and private credentials using the [official guide](https://docs.ref.tools/plans/install/index.md). Then install the plugin and grant it access to that connection:
 
 ```sh
 hermes plugins install AriesTheCoder/hermes-ref --enable
 hermes config set plugins.entries.hermes-ref.mcp_allowlist '["ref-plan"]'
 ```
 
-Restart Hermes. Merge [examples/config.yaml](examples/config.yaml), never replace your config. Pin `--ref <40-character-commit>` for reproducibility. This uses Hermes' native MCP client with no extra dependencies or daemon.
+Restart Hermes to load the plugin and its workspace tool. If you maintain an explicit saved tool selection, enable the `hermes_ref` toolset for your platform.
 
-## Workspace tool
+Merge [examples/config.yaml](examples/config.yaml) into your existing configuration; do not replace the whole file. For reproducible installation, add `--ref <40-character-commit>` to the install command.
 
-| Action | Inputs | Behaviour |
-|---|---|---|
-| `discover` | optional `offset` | Load ListSkills/writing guidance and list refs |
-| `begin` | `title`, `content` | Create private structured outline after discovery, then verify |
-| `bind` | `plan_id` | Read and bind selected existing ref after discovery |
-| `read` | none | Read working document for follow-up context |
-| `update` | `old_string`, `new_string` | Read, unique exact Edit, exact read-back |
-| `status` | none | Session pointer and current workflow state |
+The plugin uses Hermes' native MCP client. No extra dependencies or separate daemon are required.
 
-Native Ref tools remain available for comments, PR links, review and authorised agent coordination. Load the relevant live skills before use. Native edits alone do not satisfy the plugin's progress flag: finish with a meaningful workspace update. No automatic agent launches, approval, sharing changes or merges.
+### First safe check
 
-## Gating and controls
+In a fresh session, ask: “Call `ref_workspace` with action `status` only. Do not create or edit a Ref document.” With default settings, expect `ok: true` and `mode: advisory`; a new session has no working document selected. This check uses local state and makes no Ref network call. If the tool is missing, check `hermes plugins doctor hermes-ref`, enable the `hermes_ref` toolset if needed, and start a fresh session.
 
-Investigation, implementation, research, fix, deploy and plan language classifies substantive requests. `[ref-plan]` forces the workflow; `[no-ref]` skips this turn. Routine conversation creates nothing. The keyword heuristic can miss implicit requests or match incidental words; use explicit prefixes when necessary.
+The agent can load the bundled procedure with `skill_view(name="hermes-ref:workspace")`. It covers document selection, exact updates and failure recovery.
 
-Skills, discovery, clarification and native Ref tools stay available before binding. Other tools on classified turns are blocked until begin/bind/read succeeds. A bound-session follow-up also requires a fresh read before execution, including an implicit “continue” request. After execution, a verified workspace update is needed for a clean handover. Gates check ordering, NOT content quality, authorisation or factual correctness. Nested wrappers/native Ref tools are not a security sandbox. The footer reports gaps without forcing extra model turns.
+## Update, disable and remove
 
-Settings: `plugins.entries.hermes-ref.settings.enabled` (true) and `.server` (`ref-plan`). Frozen startup guidance plus dynamic pre-LLM context. Restart to unload old callbacks or guidance.
+Use `hermes plugins disable hermes-ref` to disable the plugin, or `hermes plugins remove hermes-ref` to remove its installation. Restart Hermes to ensure old callbacks/guidance are gone; the current conversation does not acquire a changed tool schema automatically.
 
-## Migration from 0.1.0
+For updates, use Hermes's plugin manager. A full-commit pinned install stays pinned; choose the new reviewed commit explicitly when updating it. The plugin never updates itself.
 
-**0.1.0 implemented the wrong workflow: final-answer recording instead of Ref Plans. 0.2.0 removes that recorder.** No final answer uploads, character/tool-count triggers or answer fallback remain.
+Disable/remove does not delete remote Ref documents or local retained data. The journal lives at `<HERMES_HOME>/plugin-data/hermes-ref/workspace.sqlite3`. On first use, version 0.3.0 imports old `plugin-state/hermes-ref/workspace.sqlite3` rows transactionally, retains the original and preserves creation claims. See [migration and retention](docs/reference.md#migration-and-retention) before rollback or manual data deletion.
 
-Reinstall with `--force --enable`, preserve the MCP grant, then restart. Old threshold settings are ignored. `[ref-record]` is a deprecated alias for plan-first gating, NOT answer recording. `ref_record_status` is replaced by `ref_workspace status`. Historical documents and `records.sqlite3` are retained untouched; no automatic conversion/deletion occurs.
+## Further documentation
 
-## Privacy and failures
-
-Only explicit model-authored outline/update calls write content. No automatic transcript/reasoning/final-answer capture and no automatic DLP claim. Authors must keep secrets out of documents.
-
-Profile-local `workspace.sqlite3` stores hashed session IDs, ref IDs and Create-attempt statuses, not document bodies. Begin attempts are claimed before Create. Ambiguous Creates never repeat automatically; returned IDs are retained even if verification fails. Read and reconcile before retrying. Updates reject stale/ambiguous old text; uncertain Edit outcomes also need read-back before retry.
-
-Each MCP call has an eight-second timeout; discover makes three sequential calls. Hooks make no remote writes. Current Hermes supplies session ID to tool handlers but keeps turn ID in the tool observability context; the plugin uses that context as a compatibility fallback.
-
-## Verification
-
-See [VERIFICATION.md](VERIFICATION.md). Compile and validate:
-
-```sh
-python3 -m py_compile __init__.py
-hermes plugins validate . --json
-hermes plugins doctor hermes-ref
-```
-
-Normal CLI verification does not establish separate TUI/gateway/native Codex-app-server/streaming acceptance. Other output transforms can suppress the footer. Workflow enforcement is not a security boundary.
+- [Workspace reference](docs/reference.md): tool actions, configuration, failure handling and migration from 0.1.0.
+- [Verification](VERIFICATION.md): observed checks and runtime coverage limits.
+- [Security](SECURITY.md): permissions, document privacy and reporting vulnerabilities.
+- [Contributing](CONTRIBUTING.md): development and verification expectations.
+- [Changelog](CHANGELOG.md): release changes and migration context.
+- [Plugin authoring standard](docs/plugin-authoring-standard.md): reusable README, skill, security and verification practices for future plugins.
+- [Hermes Ref assessment](docs/plugin-authoring-assessment.md): how this plugin measures against that standard and the remaining work.
 
 MIT. Independent community integration, not official Ref or Nous Research software.

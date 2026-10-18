@@ -1,9 +1,29 @@
 name: hermes-ref
-version: "0.2.0"
+version: "0.3.0"
+manifest_version: 2
+requires_hermes: ">=0.22.0"
 description: Plan-first Ref workspace with live guidance, session binding and verified progress edits.
 author: AriesTheCoder
 license: MIT
 homepage: https://github.com/AriesTheCoder/hermes-ref
 tags: [ref, plans, hooks, collaboration]
-provides_hooks: [pre_llm_call, pre_tool_call, transform_llm_output]
+provides_hooks: [pre_llm_call, pre_tool_call, transform_llm_output, on_session_finalize]
+provides_middleware: [tool_execution]
 provides_tools: [ref_workspace]
+config_schema:
+  enabled:
+    type: bool
+    default: true
+    description: Enable workspace actions and workflow hooks; startup guidance unloads on restart.
+  enforce_plan_first:
+    type: bool
+    default: false
+    description: Require an established/read working ref before execution. Enable only after fresh-session tool discovery.
+  server:
+    type: str
+    default: ref-plan
+    description: Existing MCP server identifier; grant it separately in mcp_allowlist.
+  timeout:
+    type: float
+    default: 20
+    description: Finite per-call timeout from 1 to 600 seconds; validated before service calls.

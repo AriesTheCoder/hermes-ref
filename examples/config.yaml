@@ -14,4 +14,6 @@ plugins:
       mcp_allowlist: [ref-plan]
       settings:
         enabled: true
+        enforce_plan_first: false
         server: ref-plan
+        timeout: 20

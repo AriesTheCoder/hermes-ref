@@ -1,5 +1,13 @@
 # Verification
 
+## 0.2.2 current API and latency correction
+
+Real runtime acceptance used Hermes' actual `PluginContext.call_mcp`, native MCP client and authenticated Ref Plans service. A known-ID bind needed one Read without discovery. An existing operational ref was updated through Write prepare/apply and exact read-back. A single private canary verified Write create, returned `planId`, an exact progress edit, and a fresh Workspace reading the persisted binding. No retired Create/Edit calls were issued.
+
+Observed wrapper timings in that run: known-ID bind 0.738 seconds; initial concurrent discovery 1.453 seconds; repeated discovery 0.000 seconds with zero network calls; pagination 0.571 seconds with one List call and no guidance reload; creation plus read-back 1.810 seconds; canary update plus read-back 1.274 seconds. These are one live acceptance sample, not statistical benchmarks or a latency guarantee.
+
+Compilation and plugin validation passed. The validator retains the existing warning about the private turn-ID compatibility import. No automated test suite, fixtures, dependencies or runners were added. Fresh-process handler acceptance does not claim the already-running TUI reloaded its frozen guidance or callbacks.
+
 ## 0.2.0 correction
 
 The plan-first implementation passed Python compilation, plugin manifest/registration validation and focused synthetic ordering probes. These covered private outlines and exact read-back, verified edits, missing-progress reporting, no footer writes, follow-up reads, opt-out, ambiguous Create no-repeat, persistent binding and session isolation. Real CLI acceptance also passed: a fresh normal Hermes CLI used discover → begin → terminal pwd → exact progress update on the same ref. An independent Ref read confirmed the outline and observed directory evidence. A second fresh process resumed the session, deliberately attempted pwd before reading the ref and received a real plugin block; after read it executed pwd successfully and verified a second progress edit to the SAME ref. The persisted workspace journal contained one binding and one verified Create attempt. Actual session tool-call records established ordering, not just the model’s final claim. No canary ID, private document content or personal directory is published here.

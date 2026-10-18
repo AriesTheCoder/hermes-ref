@@ -4,10 +4,10 @@ A native Hermes Agent integration for [Ref Plans](https://docs.ref.tools/plans/g
 
 ## Workflow
 
-1. `ref_workspace discover` loads live authoring guidance and lists existing refs. Page with `offset`; compare subject/project before selecting.
-2. `bind` reads an existing ref, or `begin` creates a private agent-authored outline with Scope, Decisions, Tasks and Verification. Exact read-back establishes readiness.
-3. Substantive tool execution is gated until the working ref is established/read.
-4. `update` performs a unique exact Edit to the SAME ref, reads it back, and verifies progress, evidence, decisions or blockers before handover.
+1. Use Ref for substantial investigations, plans and shared delivery, not routine commands or small operational changes. `ref_workspace discover` loads guidance and lists refs once. Page with `offset`; compare subject/project before selecting.
+2. `bind` reads a known ref directly without discovery, or `begin` creates a private agent-authored outline with Scope, Decisions, Tasks and Verification after discovery. Exact read-back establishes readiness.
+3. Ref coordination is advisory by default. Opt-in hard enforcement gates execution until the working ref is established/read.
+4. `update` performs a unique exact Write prepare/apply to the SAME ref, reads it back, and verifies progress, evidence, decisions or blockers before handover.
 5. Finish with a concise answer and `📖 Ready to read → <url>`. Missing steps produce an incomplete-workflow notice, never an answer archive.
 
 Follow-ups read the bound ref before work. New sessions explicitly bind the relevant document. Project switches discover and bind another ref; a previous session pointer is not proof of project relevance.
@@ -27,22 +27,22 @@ Restart Hermes. Merge [examples/config.yaml](examples/config.yaml), never replac
 
 | Action | Inputs | Behaviour |
 |---|---|---|
-| `discover` | optional `offset` | Load ListSkills/writing guidance and list refs |
+| `discover` | optional `offset` | Load initial guidance and refs concurrently; cache guidance and pages |
 | `begin` | `title`, `content` | Create private structured outline after discovery, then verify |
-| `bind` | `plan_id` | Read and bind selected existing ref after discovery |
+| `bind` | `plan_id` | Read and bind a known ref directly; no listing prerequisite |
 | `read` | none | Read working document for follow-up context |
-| `update` | `old_string`, `new_string` | Read, unique exact Edit, exact read-back |
+| `update` | `old_string`, `new_string` | Use last read snapshot, unique Write prepare/apply, exact read-back |
 | `status` | none | Session pointer and current workflow state |
 
-Native Ref tools remain available for comments, PR links, review and authorised agent coordination. Load the relevant live skills before use. Native edits alone do not satisfy the plugin's progress flag: finish with a meaningful workspace update. No automatic agent launches, approval, sharing changes or merges.
+Native Ref tools remain available for comments, PR links, review and authorised agent coordination. Load only relevant authoring skills. In opt-in enforcement mode, native edits alone do not satisfy the plugin's progress flag. Do not invent an extra edit merely to satisfy a flag in advisory mode. No automatic agent launches, approval, sharing changes or merges.
 
 ## Gating and controls
 
-Investigation, implementation, research, fix, deploy and plan language classifies substantive requests. `[ref-plan]` forces the workflow; `[no-ref]` skips this turn. Routine conversation creates nothing. The keyword heuristic can miss implicit requests or match incidental words; use explicit prefixes when necessary.
+Investigation, implementation, research, fix, deploy and plan language classifies substantive requests. `[ref-plan]` requests the workflow; `[no-ref]` skips this turn. Routine conversation creates nothing. The keyword heuristic can miss implicit requests or match incidental words; use explicit prefixes when necessary.
 
-Skills, discovery, clarification and native Ref tools stay available before binding. Other tools on classified turns are blocked until begin/bind/read succeeds. A bound-session follow-up also requires a fresh read before execution, including an implicit “continue” request. After execution, a verified workspace update is needed for a clean handover. Gates check ordering, NOT content quality, authorisation or factual correctness. Nested wrappers/native Ref tools are not a security sandbox. The footer reports gaps without forcing extra model turns.
+Hard enforcement is disabled by default to avoid deadlocks when hooks load into a running session before its cache-stable tool schema includes `ref_workspace`. Advisory mode still supports discover, bind, read and verified updates; if the workspace tool is absent, use native Ref Plans tools without blocking execution. To opt into blocking, first start a fresh session and verify the workspace tool is visible, then set `plugins.entries.hermes-ref.settings.enforce_plan_first: true`. In that mode, skills, discovery, clarification and native Ref tools stay available before binding; other tools on classified turns are blocked until begin/bind/read succeeds. Gates check ordering, NOT content quality, authorisation or factual correctness, and are not a security sandbox.
 
-Settings: `plugins.entries.hermes-ref.settings.enabled` (true) and `.server` (`ref-plan`). Frozen startup guidance plus dynamic pre-LLM context. Restart to unload old callbacks or guidance.
+Settings: `plugins.entries.hermes-ref.settings.enabled` (true), `.enforce_plan_first` (false) and `.server` (`ref-plan`). Frozen startup guidance plus dynamic pre-LLM context. Restart to unload old callbacks or guidance. Enable the `hermes_ref` toolset for your platform when using an explicit saved tool selection.
 
 ## Migration from 0.1.0
 
@@ -54,9 +54,11 @@ Reinstall with `--force --enable`, preserve the MCP grant, then restart. Old thr
 
 Only explicit model-authored outline/update calls write content. No automatic transcript/reasoning/final-answer capture and no automatic DLP claim. Authors must keep secrets out of documents.
 
-Profile-local `workspace.sqlite3` stores hashed session IDs, ref IDs and Create-attempt statuses, not document bodies. Begin attempts are claimed before Create. Ambiguous Creates never repeat automatically; returned IDs are retained even if verification fails. Read and reconcile before retrying. Updates reject stale/ambiguous old text; uncertain Edit outcomes also need read-back before retry.
+Profile-local `workspace.sqlite3` stores hashed session IDs, ref IDs and creation-attempt statuses, not document bodies. Begin attempts are claimed before Write create. Ambiguous creations never repeat automatically; returned IDs are retained even if verification fails. Updates reject stale/ambiguous text; uncertain mutations need one exact-target read, not another creation. The current API is Write create/prepare/apply with `planId` and `preparedId`, not the retired Create/Edit tools.
 
-Each MCP call has an eight-second timeout; discover makes three sequential calls. Hooks make no remote writes. Current Hermes supplies session ID to tool handlers but keeps turn ID in the tool observability context; the plugin uses that context as a compatibility fallback.
+Each MCP call has a configurable 20-second timeout (`settings.timeout`). Initial discover runs three independent calls concurrently. Guidance is cached in process for one hour and emitted once per session; ref pages are cached for 60 seconds. Repeated discovery in a turn returns a short cache notice; pagination only lists refs. Known-ID bind uses one Read. Update reuses the last-read snapshot; server-side prepare rejects stale targets, and read-back verifies the result. Document snapshots are process-local, never written to the workspace database. Reads accept legacy Markdown and validated 200-line document pages. Hooks make no remote writes.
+
+Errors name the failed action/tool, include a bounded credential-redacted detail, and explicitly prohibit retry/fallback loops. Repeating an identical failed remote operation in the same turn returns the saved failure without another network call. Advisory failures do not block the requested work. Current Hermes supplies session ID to handlers but keeps turn ID in the tool observability context; the plugin retains that compatibility fallback.
 
 ## Verification
 

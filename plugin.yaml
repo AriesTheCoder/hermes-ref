@@ -1,5 +1,5 @@
 name: hermes-ref
-version: "0.2.0"
+version: "0.2.2"
 description: Plan-first Ref workspace with live guidance, session binding and verified progress edits.
 author: AriesTheCoder
 license: MIT

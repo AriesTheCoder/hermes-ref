@@ -48,7 +48,7 @@ If `ref_workspace` is absent from an already-running session, use the available 
 
 First start a fresh session and confirm `ref_workspace` is visible. Only then enable `plugins.entries.hermes-ref.settings.enforce_plan_first: true`.
 
-On applicable turns, execution tools are blocked until `begin`, `bind` or `read` succeeds. Skills, tool discovery, clarification and native Ref tools remain available to establish the document. Follow-ups with a bound document also require a read. After execution, the plugin expects a verified workspace update before handover.
+On applicable turns, execution tools are blocked until `begin`, `bind` or `read` succeeds. Skills, tool discovery, clarification and native Ref tools remain available to establish the document. Native Ref tools are recognised by Hermes's MCP name prefix for the configured `server` (`mcp__ref_plan__` for the default `ref-plan`), so a custom server name stays exempt. Follow-ups with a bound document also require a read. After execution, the plugin expects a verified workspace update before handover.
 
 Enforcement checks ordering only. It does not establish authorisation, plan quality or factual correctness, and it is not a security sandbox. Enabling it before the workspace tool is available can leave the session unable to satisfy the gate.
 
@@ -74,7 +74,7 @@ The intended handover is a concise answer followed by:
 
 The output hook can append the link when its tracked workspace state is ready. In enforcement mode, it reports an incomplete workflow if the document was not established/read or tracked execution was not followed by a verified workspace update. Advisory mode does not add that incomplete-workflow notice.
 
-The output hook never writes to Ref or uploads the final answer. Other output transforms can suppress its footer.
+The output hook never writes to Ref or uploads the final answer. It appends the footer after the response's last line. Hermes keeps the first non-empty `transform_llm_output` result, so another output transform registered earlier can suppress the footer, and this footer can pre-empt a transform registered later.
 
 ## Privacy and local state
 

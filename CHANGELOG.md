@@ -5,6 +5,9 @@
 - Require both update fields before service calls; an omitted replacement no longer deletes content. Explicit empty replacements still support intentional deletion.
 - Reject unchanged edits without service calls or falsely marking progress updated.
 - Skip startup workflow guidance when `settings.enabled` is false; retain tool/hook registration and the documented fresh-session restart boundary.
+- Exempt native Ref tools from enforcement by the configured server's exact `mcp__<server>__` prefix instead of a `ref_plan` substring; custom server names are no longer blocked and unrelated tools no longer match.
+- Initialise the journal schema, legacy import and file modes once per journal file instead of on every lookup.
+- Append the ready footer after the response's last line; a trailing 🗺️ is no longer moved after the footer.
 
 ## 0.3.0
 

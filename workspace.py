@@ -257,7 +257,9 @@ class Workspace:
             if not settings['enabled']:
                 return None
             name = str(tool_name)
-            if name in ('ref_workspace', 'skill_view', 'skills_list', 'tool_describe', 'tool_search', 'hermes_tool_search', 'clarify') or 'ref_plan' in name:
+            # Hermes names MCP tools mcp__<server>__<tool>, replacing characters outside [A-Za-z0-9_].
+            ref_tools = 'mcp__' + re.sub(r'[^A-Za-z0-9_]', '_', settings['server']) + '__'
+            if name in ('ref_workspace', 'skill_view', 'skills_list', 'tool_describe', 'tool_search', 'hermes_tool_search', 'clarify') or name.startswith(ref_tools):
                 return None
             if not session_id or not turn_id:
                 if settings['enforce_plan_first']:
@@ -462,8 +464,6 @@ class Workspace:
                     note = '📖 Ready to read → https://plan.ref.tools/' + plan
                 if note in response_text:
                     return None
-                signature = ' 🗺️' if response_text.rstrip().endswith('🗺️') else ''
-                text = response_text.rstrip()[:-len('🗺️')].rstrip() if signature else response_text.rstrip()
-                return text + '\n\n' + note + signature
+                return response_text.rstrip() + '\n\n' + note
         except Exception:
             return None

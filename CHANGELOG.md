@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Require both update fields before service calls; an omitted replacement no longer deletes content. Explicit empty replacements still support intentional deletion.
+- Reject unchanged edits without service calls or falsely marking progress updated.
+- Skip startup workflow guidance when `settings.enabled` is false; retain tool/hook registration and the documented fresh-session restart boundary.
+
 ## 0.3.0
 
 - Replace the private turn-ID import with public tool-execution middleware and plugin-owned call context.

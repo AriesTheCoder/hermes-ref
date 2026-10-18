@@ -300,6 +300,14 @@ class Workspace:
         offset = params.get('offset', 0)
         if type(offset) is not int or not 0 <= offset <= 50000:
             raise ValueError('Offset must be an integer from 0 to 50000')
+        if params['action'] == 'update':
+            for key in ('old_string', 'new_string'):
+                if key not in params:
+                    raise ValueError(f'Update requires {key}; use an explicit empty new_string for deletion')
+            if not params['old_string']:
+                raise ValueError('Update requires a non-empty old_string')
+            if params['old_string'] == params['new_string']:
+                raise ValueError('Update must change the matched text; unchanged edits do not record progress')
 
     def handle(self, params, *, session_id=None, turn_id=None, **kwargs):
         state = None
@@ -413,7 +421,7 @@ class Workspace:
             else:
                 if not state['ready']:
                     raise ValueError('Read the working ref this turn first')
-                old, new = params.get('old_string', ''), params.get('new_string', '')
+                old, new = params['old_string'], params['new_string']
                 saved = session.document
                 actual = saved[1] if saved and saved[0] == plan else self.read(plan)
                 if not old or actual.count(old) != 1:

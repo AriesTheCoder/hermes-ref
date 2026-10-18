@@ -17,7 +17,7 @@ The agent calls `ref_workspace` with an `action` and the corresponding inputs. â
 
 For `begin`, `content` must start with `# <title>` followed by a newline and include Scope, Decisions, Tasks and Verification. The agent writes the outline; the plugin checks its structure and read-back.
 
-For `update`, `old_string` must be non-empty and match exactly once. The tool uses Ref's current `Write prepare/apply` API and retains the leading document title. A stale or ambiguous target requires a fresh read and a corrected edit.
+For `update`, both `old_string` and `new_string` must be supplied. The target must be non-empty and match exactly once; the replacement must differ from it. An explicit `new_string: ""` intentionally deletes the target, while an omitted replacement is an error. Incomplete and unchanged edits are rejected before service calls and do not mark progress updated. The tool uses Ref's current `Write prepare/apply` API and retains the leading document title. A stale or ambiguous target requires a fresh read and a corrected edit.
 
 Bindings persist for the same session across processes. A new session must explicitly bind the relevant document. When switching projects, bind that project's document; an existing pointer does not establish project relevance.
 
@@ -29,7 +29,7 @@ Merge [examples/config.yaml](../examples/config.yaml) into the active profile's 
 
 | Setting | Default | Purpose |
 |---|---|---|
-| `enabled` | `true` | Enable workspace handling and workflow hooks. Disabling this setting does not unload already-registered startup guidance. |
+| `enabled` | `true` | Enable workspace handling and workflow hooks. When false at startup, no workflow guidance is registered. Restart Hermes and begin a fresh session to remove guidance already frozen into a conversation. |
 | `enforce_plan_first` | `false` | Block execution tools until the working document is established/read on applicable turns. |
 | `server` | `ref-plan` | Select the existing Hermes MCP server connection. Its name must also be granted in the plugin's `mcp_allowlist`. |
 | `timeout` | `20` | Timeout in seconds for each MCP call. |

@@ -19,7 +19,8 @@ agents, sharing, approvals or tests. Finish with the working ref link when relev
 
 def register(ctx):
     workspace = Workspace(ctx)
-    ctx.register_system_prompt_section('hermes-ref.guidance', GUIDANCE, max_chars=1200)
+    if ctx.get_config('enabled', True) is True:
+        ctx.register_system_prompt_section('hermes-ref.guidance', GUIDANCE, max_chars=1200)
     ctx.register_middleware('tool_execution', workspace.execution)
     ctx.register_hook('pre_llm_call', workspace.before)
     ctx.register_hook('pre_tool_call', workspace.gate)

@@ -19,8 +19,14 @@ WORKSPACE_SCHEMA = {
             },
             'plan_id': {'type': 'string', 'pattern': '^[A-Za-z0-9_-]{8,80}$'},
             'offset': {'type': 'integer', 'minimum': 0, 'maximum': 50000},
-            'old_string': {'type': 'string', 'minLength': 1, 'maxLength': 60000},
-            'new_string': {'type': 'string', 'maxLength': 60000},
+            'old_string': {
+                'type': 'string', 'minLength': 1, 'maxLength': 60000,
+                'description': 'Required for update: a non-empty passage matching exactly once.',
+            },
+            'new_string': {
+                'type': 'string', 'maxLength': 60000,
+                'description': 'Required for update and must differ from old_string. Supply an explicit empty string for intentional deletion; omission is an error.',
+            },
         },
         'required': ['action'],
         'additionalProperties': False,

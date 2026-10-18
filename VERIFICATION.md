@@ -1,5 +1,25 @@
 # Verification
 
+## Unreleased workspace safety corrections
+
+Checked the uncommitted candidate on `fix/workspace-safety`, based on `7786f3d1607088a14ce10681f31b148cb74b9f8c`, on Linux with Hermes `v0.22.2+964.gdbbcc14` (host revision `dbbcc144cb94f1092c2099fa4e34bd5d5bea427e`). No installed plugin, settings, dependencies or live Ref documents were changed by these checks.
+
+A disposable offline probe exercised the actual registration, handler and middleware code with a synthetic MCP transport and temporary Hermes home. The same probe reported three failures on the base source and passed all 18 checks on the candidate:
+
+| Behaviour | Base source | Candidate |
+|---|---|---|
+| Update omitting `new_string` | Accepted; deleted target; three remote calls | Refused; unchanged content; zero remote calls; progress stays incomplete |
+| Update with identical old/replacement text | Accepted; three remote calls; progress marked updated | Refused; zero remote calls; progress stays incomplete |
+| Fresh registration with `enabled: false` | One startup guidance section | No startup guidance section; tool/hooks retained |
+| Explicit empty replacement and ordinary replacement | Passed | Passed with exact read-back |
+| Invalid/missing target or non-string replacement | Refused | Refused before remote calls |
+| Follow-up read gate, opt-out, stale target and repeated remote-failure suppression | Passed | Passed |
+| Enabled/default startup guidance | Registered | Registered |
+
+All four Python modules compiled, `git diff --check` passed, `hermes plugins validate . --json` returned `ok: true` with no warnings, and `hermes plugins doctor . --ci` passed real discovery/import/registration with one tool and four hooks. Schema descriptions and the workspace reference now state the explicit update/deletion and restart contracts.
+
+These are local candidate checks, not a release, installed-activation check or live transport acceptance. Existing conversations retain frozen startup guidance; installing the correction requires restarting Hermes and starting a fresh session to observe changed guidance. The probe and logs are disposable artifacts outside the repository; no automated suite, fixtures, runner, test dependency or CI workflow was added. Earlier acceptance evidence below is historical and does not expand this correction's coverage.
+
 ## 0.3.0 source acceptance
 
 Pre-release source acceptance used Linux, Python 3.14.7 and Hermes `v0.22.2+963` at source revision `bebe448a2bdb57043ca8ebd820807bf7eed6320d`. The checks below did not replace the installed plugin or already-running conversation. Published-commit installation and fresh-session activation results are recorded separately in the [0.3.0 release notes](https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.3.0).

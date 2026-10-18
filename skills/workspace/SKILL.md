@@ -1,7 +1,7 @@
 ---
 name: workspace
 description: Use when coordinating substantial work in Ref Plans.
-version: 0.3.0
+version: 0.3.1
 license: MIT
 ---
 

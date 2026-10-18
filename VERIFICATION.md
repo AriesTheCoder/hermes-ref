@@ -1,6 +1,6 @@
 # Verification
 
-## Unreleased gate, journal and footer corrections
+## 0.3.1 gate, journal and footer corrections
 
 Checked the uncommitted candidate on `fix/gate-storage-footer`, based on `fedad750daf4cfa07b89e98c0b4a28affbd0c80d`, on Linux with Hermes `v0.22.2+964.gdbbcc14`. The `mcp__` tool-name prefix was confirmed unchanged in Hermes tags v0.22.0, v0.22.1 and v0.22.2. No installed plugin, settings, dependencies or live Ref documents were changed.
 
@@ -18,7 +18,7 @@ A disposable offline probe ran the actual workspace and storage code against Her
 
 The four Python modules parsed, `git diff --check` passed, `hermes plugins validate . --json` returned `ok: true` with every check passing, and `hermes plugins doctor . --ci` passed with one tool and four hooks. These are local candidate checks, not a release, installed-activation or live transport acceptance. The probe is a disposable artifact outside the repository; no automated suite, fixtures, runner, test dependency or CI workflow was added.
 
-## Unreleased workspace safety corrections
+## 0.3.1 workspace safety corrections
 
 Checked the uncommitted candidate on `fix/workspace-safety`, based on `7786f3d1607088a14ce10681f31b148cb74b9f8c`, on Linux with Hermes `v0.22.2+964.gdbbcc14` (host revision `dbbcc144cb94f1092c2099fa4e34bd5d5bea427e`). No installed plugin, settings, dependencies or live Ref documents were changed by these checks.
 

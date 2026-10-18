@@ -107,7 +107,7 @@ Same-session workspace actions are serialised. Caches are bounded at 64 scoped s
 
 ## Migration and retention
 
-On first journal access, 0.3.0 transactionally imports legacy `plugin-state/hermes-ref/workspace.sqlite3` bindings and creation-attempt rows into the sanctioned `plugin-data` journal. Existing destination rows win conflicts. Import is marked once, the source is opened read-only and is not deleted. A malformed legacy schema fails the transaction rather than silently losing creation claims. Journals from an unknown newer schema are refused.
+On first journal access, 0.3.0 and later transactionally import legacy `plugin-state/hermes-ref/workspace.sqlite3` bindings and creation-attempt rows into the sanctioned `plugin-data` journal. Existing destination rows win conflicts. Import is marked once, the source is opened read-only and is not deleted. A malformed legacy schema fails the transaction rather than silently losing creation claims. Journals from an unknown newer schema are refused.
 
 Disable, removal and updates retain the journal and remote documents. For a manual reset, stop Hermes first and back up both journal locations, including any SQLite sidecars, before choosing which local state to delete. Resetting state discards bindings and no-repeat claims; it does not delete remote documents. A downgrade uses the retained legacy journal and will not see newer destination-only updates, so reconcile both copies before resuming old code. Do not run old and new versions concurrently against the same profile during migration or rollback.
 

@@ -62,7 +62,7 @@ Optional enforcement can block execution tools until the working document has be
 
 The supported Hermes floor is `0.22.0`: the required public middleware, prompt, skill and storage contracts were checked in that release's source. Runtime acceptance currently covers Linux on Hermes `0.22.2+963`. Separate interactive CLI, TUI/Desktop, messaging gateway, native Codex-app-server and isolated-plugin-host journeys are not claimed. See the [verification matrix](VERIFICATION.md).
 
-Version `0.3.0` uses public call-identity middleware and includes a bundled workflow skill. Release-specific installation and activation evidence is recorded in the [release notes](https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.3.0).
+Version `0.3.1` guards workspace updates against accidental deletion, respects `enabled: false` for startup guidance and fixes the enforcement exemption for custom server names; see the [changelog](CHANGELOG.md) and [0.3.1 release notes](https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.3.1). Version `0.3.0` introduced public call-identity middleware and the bundled workflow skill; its installation and activation evidence is in the [0.3.0 release notes](https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.3.0).
 
 First configure the Ref Plans MCP connection and private credentials using the [official guide](https://docs.ref.tools/plans/install/index.md). Then install the plugin and grant it access to that connection:
 
@@ -89,7 +89,7 @@ Use `hermes plugins disable hermes-ref` to disable the plugin, or `hermes plugin
 
 For updates, use Hermes's plugin manager. A full-commit pinned install stays pinned; choose the new reviewed commit explicitly when updating it. The plugin never updates itself.
 
-Disable/remove does not delete remote Ref documents or local retained data. The journal lives at `<HERMES_HOME>/plugin-data/hermes-ref/workspace.sqlite3`. On first use, version 0.3.0 imports old `plugin-state/hermes-ref/workspace.sqlite3` rows transactionally, retains the original and preserves creation claims. See [migration and retention](docs/reference.md#migration-and-retention) before rollback or manual data deletion.
+Disable/remove does not delete remote Ref documents or local retained data. The journal lives at `<HERMES_HOME>/plugin-data/hermes-ref/workspace.sqlite3`. On first use, version 0.3.0 and later import old `plugin-state/hermes-ref/workspace.sqlite3` rows transactionally, retains the original and preserves creation claims. See [migration and retention](docs/reference.md#migration-and-retention) before rollback or manual data deletion.
 
 ## Further documentation
 

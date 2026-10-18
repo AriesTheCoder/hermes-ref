@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.1
 
 - Require both update fields before service calls; an omitted replacement no longer deletes content. Explicit empty replacements still support intentional deletion.
 - Reject unchanged edits without service calls or falsely marking progress updated.

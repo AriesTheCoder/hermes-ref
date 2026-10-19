@@ -9,7 +9,7 @@ The agent calls `ref_workspace` with an `action` and the corresponding inputs. â
 | Action | Inputs | Behaviour |
 |---|---|---|
 | `discover` | optional `offset` | Load authoring guidance and list accessible refs. Use `offset` for another page. |
-| `bind` | `plan_id` | Read and select a known ref directly, without discovery. |
+| `bind` | `plan_id` | Read and select a known ref directly, without discovery. The document may have been authored by any Ref client; its body need not begin with a heading. |
 | `begin` | `title`, `content` | Create a private outline after discovery, read it back and bind it. |
 | `read` | none | Read the bound document for follow-up context. |
 | `update` | `old_string`, `new_string` | Replace one unique passage in the last-read document, then verify the result by reading it back. |
@@ -17,7 +17,7 @@ The agent calls `ref_workspace` with an `action` and the corresponding inputs. â
 
 For `begin`, `content` must start with `# <title>` followed by a newline and include Scope, Decisions, Tasks and Verification. The agent writes the outline; the plugin checks its structure and read-back.
 
-For `update`, both `old_string` and `new_string` must be supplied. The target must be non-empty and match exactly once; the replacement must differ from it. An explicit `new_string: ""` intentionally deletes the target, while an omitted replacement is an error. Incomplete and unchanged edits are rejected before service calls and do not mark progress updated. The tool uses Ref's current `Write prepare/apply` API and retains the leading document title. A stale or ambiguous target requires a fresh read and a corrected edit.
+For `update`, both `old_string` and `new_string` must be supplied. The target must be non-empty and match exactly once; the replacement must differ from it. An explicit `new_string: ""` intentionally deletes the target, while an omitted replacement is an error. Incomplete and unchanged edits are rejected before service calls and do not mark progress updated. The tool uses Ref's current `Write prepare/apply` API. An edit that would remove a document's leading heading, or empty the document, is refused before any service call. A stale or ambiguous target requires a fresh read and a corrected edit.
 
 Bindings persist for the same session across processes. A new session must explicitly bind the relevant document. When switching projects, bind that project's document; an existing pointer does not establish project relevance.
 
@@ -99,7 +99,7 @@ The current API uses `Write create/prepare/apply`, with `planId` and `preparedId
 
 Initial discovery runs three independent calls concurrently: `ListSkills`, the writing guidance `Skill`, and `List`. Guidance is cached in-process for one hour and emitted once per session. Ref listing pages are cached for 60 seconds; repeated discovery in a turn returns a short cache notice. Pagination only lists refs, without reloading guidance.
 
-Known-ID bind skips discovery and reads the target directly. Reads support legacy Markdown responses and validated 200-line document pages, so longer documents may require multiple calls. Updates reuse the last-read snapshot; server-side prepare checks the target, and a subsequent read verifies the result.
+Known-ID bind skips discovery and reads the target directly. Reads support legacy Markdown responses and validated 200-line document pages, so longer documents may require multiple calls. Ref stores the document title separately and reports it in each page header; successful `begin`, `bind`, `read` and `update` results return it as `title` next to `content`, so documents written by other Ref clients without a leading heading are accepted. An empty document is reported as empty. Updates reuse the last-read snapshot; server-side prepare checks the target, and a subsequent read verifies the result.
 
 Public `tool_execution` middleware supplies exact session/turn identity through a plugin-owned context variable while the registered handler runs. It calls the downstream chain once and always resets that context. There is no private host import or guessed current turn. Direct handler calls must supply explicit host identity or receive a controlled error.
 

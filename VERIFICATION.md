@@ -1,5 +1,38 @@
 # Verification
 
+## 0.3.2 external document binding
+
+Checked the uncommitted candidate on `fix/bind-external-documents`, based on `8f2fc9c`, on Linux with Hermes `v0.22.2+964.gdbbcc14`. No installed plugin, settings or live Ref documents were changed by these checks.
+
+A disposable offline probe drove the actual handler through a synthetic Ref transport that returns the current paginated `Read` envelope (`<title> (lines a-b of n)\n---\n<page>`) and records `Write prepare/apply`. It passed 11 of 11 checks on the candidate and 2 of 11 on the base source; the base passes are the plugin-authored bind and the no-service-call refusal check. Some base failures reflect the new `title` field and error wording rather than the defect itself; the defect is the first four rows.
+
+| Behaviour | Base source | Candidate |
+|---|---|---|
+| `bind` a document whose body has no leading `# ` (title held by Ref) | `Read returned no document` | Bound; `title` returned from the page header |
+| `update` and follow-up `read` of that document | Not reachable | Edit applied, read back and verified; title retained |
+| Three-page document without a leading heading | Rejected after assembly | Assembled, 450 lines |
+| Empty document | `Read returned inconsistent pagination` | `Read returned an empty document` |
+| `bind` a plugin-authored outline beginning with `# Title` | Bound | Bound; `title` returned |
+| Edit removing a document's leading heading | `Preserve the title and workspace document size limit` | `Preserve the leading heading; edit the body below it`, no service call |
+| Edit that would empty the document | Same combined message | `Edit would empty the document; narrow the target`, no service call |
+
+The four Python modules compiled, `git diff --check` passed, `hermes plugins validate . --json` returned `ok: true`, `hermes plugins doctor . --ci` passed with one tool and four hooks, and the 0.3.1 gate/journal/footer probe still passed 16 of 16. The live transport check below was performed on 0.3.1; repeating the failed external-document bind against an installed 0.3.2 remains to be done after release. The probe is a disposable artifact outside the repository; no automated suite, fixtures, runner, test dependency or CI workflow was added.
+
+## 0.3.1 installed activation and live transport acceptance
+
+Checked the installed plugin at `~/.hermes/plugins/hermes-ref`, tracking `main` at `8f2fc9c` unpinned, on Linux with Hermes `v0.22.2+964.gdbbcc14`, model `gpt-6.1-sol` via `openai-codex`, on 2026-10-20. Every session was a fresh headless CLI run (`hermes chat --query-file … -Q --oneshot --source cli`) with default advisory settings and the `ref-plan` grant. No client document was read or changed.
+
+| Step | Observed |
+|---|---|
+| Fresh session with the saved `platform_toolsets.cli` selection | `ref_workspace` absent; the agent loaded `hermes-ref:workspace` and found no tool. The saved list predated the plugin. `hermes tools enable hermes_ref --platform cli` added it; no restart of a running host was involved. |
+| Fresh session, `bind` of a document authored outside the plugin | Failed with `Read returned no document` after one 1.35 s network call. A native `mcp__ref_plan__Read` of the same ID in another fresh session returned the document, so the transport and credential were sound; the plugin's assembled-body `# ` check rejected a document whose title is stored by Ref rather than as a leading h1. Recorded as a boundary below. |
+| Fresh session, `begin` without `discover` | Refused before any service call: `Discover existing refs before creating; bind a known ID directly`. |
+| Fresh session, `discover` then `begin` | Created private canary `aJJ9lSGOiftaJOjb`, returned the outline read back from Ref, and appended the ready footer after the response's last line. |
+| Second fresh session, `bind` known ID, one exact `update`, `status` | All three returned `ok: true`; `status` reported `ready: true, updated: true`. The update replaced one task line and the returned content showed the change. |
+| Separate native client read-back | An independent Ref Plans client read the canary and showed the updated line. Journal `sessions` rows went from 21 to 23 across the two bound sessions. |
+
+Boundaries: the plugin cannot bind a document whose body does not begin with `# ` even when Ref returns it correctly, and reports that as a missing document; this affects documents authored by other Ref clients and is unchanged in 0.3.1. The canary was retained, not deleted. Interactive TUI/Desktop, gateway, Codex-app-server and isolated-plugin-host journeys remain unclaimed. No automated suite was added.
+
 ## 0.3.1 gate, journal and footer corrections
 
 Checked the uncommitted candidate on `fix/gate-storage-footer`, based on `fedad750daf4cfa07b89e98c0b4a28affbd0c80d`, on Linux with Hermes `v0.22.2+964.gdbbcc14`. The `mcp__` tool-name prefix was confirmed unchanged in Hermes tags v0.22.0, v0.22.1 and v0.22.2. No installed plugin, settings, dependencies or live Ref documents were changed.

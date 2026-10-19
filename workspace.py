@@ -169,20 +169,26 @@ class Workspace:
             raise MCPFailure(f'{tool}: MCP request failed ({type(exc).__name__}); check the connection, server grant and Hermes diagnostics') from None
 
     def read(self, plan):
-        lines, offset, total, size = [], 1, None, 0
+        # Returns (title, body). Ref stores the title separately and reports it
+        # in each page header, so a body authored by another client need not
+        # begin with an h1; a legacy plain-Markdown response supplies its own.
+        lines, offset, total, size, title = [], 1, None, 0, None
         for _ in range(100):
             text = self.call('Read', {'planId': plan, 'offset': offset, 'limit': 200})
             if not isinstance(text, str):
-                raise RuntimeError('Read returned no document')
+                raise RuntimeError(f'Read returned {type(text).__name__} instead of document text')
             size += len(text)
             if size > MAX_DOCUMENT:
                 raise RuntimeError('Document exceeds the 262144-character workspace snapshot limit; use native Ref tools')
             if offset == 1 and text.startswith('# '):
-                return text
-            header = re.match(r'^.* \(lines (\d+)-(\d+) of (\d+)\)\n---\n', text)
+                return text.split('\n', 1)[0][2:].strip(), text
+            header = re.match(r'^(.*) \(lines (\d+)-(\d+) of (\d+)\)\n---\n', text)
             if not header:
                 raise RuntimeError('Read returned an unsupported document envelope')
-            start, end, count = map(int, header.groups())
+            title = header.group(1)
+            start, end, count = map(int, header.groups()[1:])
+            if count == 0:
+                raise RuntimeError('Read returned an empty document')
             if start != offset or end < start or end > count or (total is not None and count != total):
                 raise RuntimeError('Read returned inconsistent pagination')
             total = count
@@ -195,9 +201,9 @@ class Workspace:
             lines.extend(chunk)
             if end == total:
                 actual = '\n'.join(lines)
-                if not actual.startswith('# '):
-                    raise RuntimeError('Read returned no document')
-                return actual
+                if not actual.strip():
+                    raise RuntimeError('Read returned an empty document')
+                return title, actual
             offset = end + 1
         raise RuntimeError('Read exceeded the document page limit')
 
@@ -397,7 +403,7 @@ class Workspace:
             if not isinstance(plan, str) or not ID.fullmatch(plan):
                 raise RuntimeError('Write create returned no valid planId; reconcile before another creation')
             self.store.bind(store_id, plan)
-            actual = self.read(plan)
+            title, actual = self.read(plan)
             if actual.strip() != content.strip():
                 raise RuntimeError('Create read-back differs; reconcile before work')
             self.store.verified(key)
@@ -410,7 +416,7 @@ class Workspace:
             plan = params.get('plan_id', '')
             if not ID.fullmatch(plan):
                 raise ValueError('Invalid plan ID')
-            actual = self.read(plan)
+            title, actual = self.read(plan)
             self.store.bind(store_id, plan)
         else:
             plan = self.store.current(self.store_identity(session_id))
@@ -419,30 +425,34 @@ class Workspace:
             if action == 'read':
                 if session.document is None or session.document[0] != plan:
                     state['updated'] = False
-                actual = self.read(plan)
+                title, actual = self.read(plan)
             else:
                 if not state['ready']:
                     raise ValueError('Read the working ref this turn first')
                 old, new = params['old_string'], params['new_string']
                 saved = session.document
-                actual = saved[1] if saved and saved[0] == plan else self.read(plan)
+                title, actual = (saved[2], saved[1]) if saved and saved[0] == plan else self.read(plan)
                 if not old or actual.count(old) != 1:
                     raise ValueError('Edit must match exactly once; read and reconcile')
                 expected = actual.replace(old, new, 1)
-                if not expected.startswith('# ') or len(expected) > MAX_DOCUMENT:
-                    raise ValueError('Preserve the title and workspace document size limit')
+                if not expected.strip():
+                    raise ValueError('Edit would empty the document; narrow the target')
+                if actual.startswith('# ') and not expected.startswith('# '):
+                    raise ValueError('Preserve the leading heading; edit the body below it')
+                if len(expected) > MAX_DOCUMENT:
+                    raise ValueError('Edit exceeds the 262144-character workspace document limit')
                 prepared = self.call('Write', {'action': 'prepare', 'planId': plan, 'why': 'Record verified progress in the existing working ref', 'edits': [{'target': {'prefix': '', 'current': old, 'suffix': ''}}]})
                 prepared_id = prepared.get('preparedId') if isinstance(prepared, dict) else None
                 if not isinstance(prepared_id, str) or not prepared_id:
                     raise RuntimeError('Write prepare returned no preparedId; nothing applied')
                 self.call('Write', {'action': 'apply', 'planId': plan, 'preparedId': prepared_id, 'edits': [{'replacement': new}]})
-                actual = self.read(plan)
+                title, actual = self.read(plan)
                 if actual.strip() != expected.strip():
                     raise RuntimeError('Edit read-back differs; reconcile before claiming success')
                 state['updated'] = True
-        session.document = (plan, actual)
+        session.document = (plan, actual, title)
         state.update(ready=True, required=True)
-        return {'url': 'https://plan.ref.tools/' + plan, 'content': actual}
+        return {'url': 'https://plan.ref.tools/' + plan, 'title': title, 'content': actual}
 
     def finish(self, *, response_text='', session_id=None, turn_id=None, **kwargs):
         try:

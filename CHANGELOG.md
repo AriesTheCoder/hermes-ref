@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2
+
+- Bind, read and update documents whose body does not begin with a `# ` heading, such as documents authored by other Ref clients. The title comes from Ref's page header and is returned as `title` alongside `content`; the old check rejected these documents as "Read returned no document".
+- Keep the leading heading guard only for documents that have one, refuse an edit that would empty the document, and name the rejected condition in each error.
+- Report an empty document and an unexpected Read result type as such instead of as a missing document.
+
 ## 0.3.1
 
 - Require both update fields before service calls; an omitted replacement no longer deletes content. Explicit empty replacements still support intentional deletion.

@@ -60,7 +60,7 @@ Optional enforcement can block execution tools until the working document has be
 
 ## Install
 
-The supported Hermes floor is `0.22.0`: the required public middleware, prompt, skill and storage contracts were checked in that release's source. Runtime acceptance currently covers Linux on Hermes `0.22.2+963`. Separate interactive CLI, TUI/Desktop, messaging gateway, native Codex-app-server and isolated-plugin-host journeys are not claimed. See the [verification matrix](VERIFICATION.md).
+The supported Hermes floor is `0.22.0`: the required public middleware, prompt, skill and storage contracts were checked in that release's source. Runtime acceptance currently covers Linux on Hermes `0.22.2+964`, including headless CLI sessions that created, bound, updated and read back a private document through the installed 0.3.1 plugin. Interactive TUI/Desktop, messaging gateway, native Codex-app-server and isolated-plugin-host journeys are not claimed. Documents whose body does not begin with a `# ` heading, such as those authored by other Ref clients, could not be bound in 0.3.1; 0.3.2 accepts them and returns the stored title with the content. See the [verification matrix](VERIFICATION.md).
 
 Version `0.3.1` guards workspace updates against accidental deletion, respects `enabled: false` for startup guidance and fixes the enforcement exemption for custom server names; see the [changelog](CHANGELOG.md) and [0.3.1 release notes](https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.3.1). Version `0.3.0` introduced public call-identity middleware and the bundled workflow skill; its installation and activation evidence is in the [0.3.0 release notes](https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.3.0).
 

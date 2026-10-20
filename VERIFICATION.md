@@ -2,7 +2,7 @@
 
 ## 0.3.2 external document binding
 
-Checked the uncommitted candidate on `fix/bind-external-documents`, based on `e6f2f8c`, on Linux with Hermes `v0.22.2+964.gdbbcc14`. No installed plugin, settings or live Ref documents were changed by these checks.
+Checked the uncommitted candidate on `fix/bind-external-documents`, based on `3a02b99`, on Linux with Hermes `v0.22.2+964.gdbbcc14`. No installed plugin, settings or live Ref documents were changed by these checks.
 
 A disposable offline probe drove the actual handler through a synthetic Ref transport that returns the current paginated `Read` envelope (`<title> (lines a-b of n)\n---\n<page>`) and records `Write prepare/apply`. It passed 11 of 11 checks on the candidate and 2 of 11 on the base source; the base passes are the plugin-authored bind and the no-service-call refusal check. Some base failures reflect the new `title` field and error wording rather than the defect itself; the defect is the first four rows.
 
@@ -22,7 +22,7 @@ Live repeat of the failed bind: after merging the candidate to `main` (`5a58b51`
 
 ## 0.3.1 installed activation and live transport acceptance
 
-Checked the installed plugin at `~/.hermes/plugins/hermes-ref`, tracking `main` at `e6f2f8c` unpinned, on Linux with Hermes `v0.22.2+964.gdbbcc14`, model `gpt-6.1-sol` via `openai-codex`, on 2026-10-20. Every session was a fresh headless CLI run (`hermes chat --query-file … -Q --oneshot --source cli`) with default advisory settings and the `ref-plan` grant. No client document was read or changed.
+Checked the installed plugin at `~/.hermes/plugins/hermes-ref`, tracking `main` at `3a02b99` unpinned, on Linux with Hermes `v0.22.2+964.gdbbcc14`, model `gpt-6.1-sol` via `openai-codex`, on 2026-10-20. Every session was a fresh headless CLI run (`hermes chat --query-file … -Q --oneshot --source cli`) with default advisory settings and the `ref-plan` grant. No client document was read or changed.
 
 | Step | Observed |
 |---|---|

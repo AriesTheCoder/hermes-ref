@@ -1,41 +1,80 @@
 # Changelog
 
-## 0.3.2
+All notable changes to this project are documented in this file.
 
-- Bind, read and update documents whose body does not begin with a `# ` heading, such as documents authored by other Ref clients. The title comes from Ref's page header and is returned as `title` alongside `content`; the old check rejected these documents as "Read returned no document".
-- Keep the leading heading guard only for documents that have one, refuse an edit that would empty the document, and name the rejected condition in each error.
-- Report an empty document and an unexpected Read result type as such instead of as a missing document.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each released version has a matching tag and [GitHub release](https://github.com/AriesTheCoder/hermes-ref/releases). See [VERIFICATION.md](VERIFICATION.md) for the checks behind each release.
 
-## 0.3.1
+## [Unreleased]
 
-- Require both update fields before service calls; an omitted replacement no longer deletes content. Explicit empty replacements still support intentional deletion.
-- Reject unchanged edits without service calls or falsely marking progress updated.
-- Skip startup workflow guidance when `settings.enabled` is false; retain tool/hook registration and the documented fresh-session restart boundary.
-- Exempt native Ref tools from enforcement by the configured server's exact `mcp__<server>__` prefix instead of a `ref_plan` substring; custom server names are no longer blocked and unrelated tools no longer match.
-- Initialise the journal schema, legacy import and file modes once per journal file instead of on every lookup.
-- Append the ready footer after the response's last line; a trailing 🗺️ is no longer moved after the footer.
+Nothing yet.
 
-## 0.3.0
+## [0.3.2] - 2026-10-20
 
-- Replace the private turn-ID import with public tool-execution middleware and plugin-owned call context.
-- Declare a Hermes `>=0.22.0` support floor and typed settings; validate settings and workspace arguments before service calls.
-- Separate registration, schemas, workspace behaviour and storage. Registration performs no journal or network I/O.
-- Use the public profile-local storage helpers. Lazily import legacy bindings/creation claims transactionally while retaining the original journal.
-- Bound session, turn, discovery and snapshot caches; serialise same-session operations, retain active sessions, propagate worker context and release finalized/unloaded state.
-- Scope caches and non-default-server bindings by profile/server, deliver cached pages per turn, clear readiness after failed verification and withhold arbitrary upstream exception text.
-- Bundle and register `hermes-ref:workspace` with an operational limits reference.
-- Document data flow, safe first use, lifecycle, retention/rollback, support boundaries and observed verification. Advisory mode remains the default; no automatic answer/transcript recording is introduced.
+### Fixed
 
-See VERIFICATION.md for source acceptance and host metadata/concurrent-hook caveats. Installation and fresh-session activation evidence belongs to the release notes.
+- `bind`, `read` and `update` accept documents whose body does not begin with a `# ` heading, such as documents authored by other Ref clients. The title comes from Ref's page header and is returned as `title` alongside `content`. 0.3.1 rejected these documents as "Read returned no document".
+- An empty document and an unexpected Read result type are reported as such instead of as a missing document.
 
-## 0.2.2
+### Changed
 
-Use the current Ref Write create/prepare/apply API. Improve known-ID binding, discovery concurrency/caching, pagination, error detail and repeated-failure suppression.
+- The leading-heading guard on `update` applies only to documents that have one. An edit that would empty the document is refused before any service call. Each refusal names the rejected condition.
 
-## 0.2.0
+## [0.3.1] - 2026-10-19
 
-Replace final-answer recording with a plan-first shared-document workspace. Preserve historical records and make hard ordering enforcement opt-in.
+### Fixed
 
-## 0.1.0
+- Both update fields are required before any service call; an omitted replacement no longer deletes content. An explicit empty replacement still supports intentional deletion.
+- Unchanged edits are rejected without service calls and without marking progress updated.
+- Native Ref tools are exempted from enforcement by the configured server's exact `mcp__<server>__` prefix instead of a `ref_plan` substring. Custom server names are no longer blocked and unrelated tools no longer match.
+- The ready footer is appended after the response's last line; a trailing 🗺️ is no longer moved after it.
 
-Historical automatic final-answer recorder. Superseded by the shared-document workflow; its data is not automatically converted or deleted.
+### Changed
+
+- Startup workflow guidance is skipped when `settings.enabled` is false. Tool and hook registration and the documented fresh-session restart boundary are retained.
+- The journal schema, legacy import and file modes are initialised once per journal file instead of on every lookup.
+
+## [0.3.0] - 2026-10-19
+
+### Added
+
+- Hermes `>=0.22.0` support floor and typed settings, validated before service calls.
+- Public profile-local storage helpers, with a transactional lazy import of legacy bindings and creation claims that retains the original journal.
+- Bundled `hermes-ref:workspace` skill with an operational limits reference.
+- Documentation of data flow, safe first use, lifecycle, retention and rollback, support boundaries and observed verification.
+
+### Changed
+
+- The private turn-ID import is replaced by public tool-execution middleware and plugin-owned call context.
+- Registration, schemas, workspace behaviour and storage are separate modules. Registration performs no journal or network I/O.
+- Session, turn, discovery and snapshot caches are bounded; same-session operations are serialised; active sessions are retained; worker context is propagated; finalized and unloaded state is released.
+- Caches and non-default-server bindings are scoped by profile and server. Cached pages are delivered per turn, readiness is cleared after failed verification, and arbitrary upstream exception text is withheld.
+- Advisory mode remains the default. No automatic answer or transcript recording is introduced.
+
+## [0.2.2] - 2026-10-19
+
+Not tagged; included in the 0.3.0 release.
+
+### Changed
+
+- Uses the current Ref Write create/prepare/apply API.
+- Improved known-ID binding, discovery concurrency and caching, pagination, error detail and repeated-failure suppression.
+
+## [0.2.0] - 2026-10-11
+
+### Changed
+
+- Final-answer recording is replaced by a plan-first shared-document workspace. Historical records are preserved and hard ordering enforcement is opt-in.
+
+## [0.1.0] - 2026-10-11
+
+### Added
+
+- Initial release: automatic final-answer recorder. Superseded by the shared-document workflow; its data is not automatically converted or deleted.
+
+[Unreleased]: https://github.com/AriesTheCoder/hermes-ref/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/AriesTheCoder/hermes-ref/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/AriesTheCoder/hermes-ref/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/AriesTheCoder/hermes-ref/compare/v0.2.0...v0.3.0
+[0.2.2]: https://github.com/AriesTheCoder/hermes-ref/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/AriesTheCoder/hermes-ref/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/AriesTheCoder/hermes-ref/releases/tag/v0.1.0

@@ -33,7 +33,7 @@ Checked the installed plugin at `~/.hermes/plugins/hermes-ref`, tracking `main` 
 | Second fresh session, `bind` known ID, one exact `update`, `status` | All three returned `ok: true`; `status` reported `ready: true, updated: true`. The update replaced one task line and the returned content showed the change. |
 | Separate native client read-back | An independent Ref Plans client read the canary and showed the updated line. Journal `sessions` rows went from 21 to 23 across the two bound sessions. |
 
-Boundaries: the plugin cannot bind a document whose body does not begin with `# ` even when Ref returns it correctly, and reports that as a missing document; this affects documents authored by other Ref clients and is unchanged in 0.3.1. The canary was retained, not deleted. Interactive TUI/Desktop, gateway, Codex-app-server and isolated-plugin-host journeys remain unclaimed. No automated suite was added.
+Boundaries: the plugin cannot bind a document whose body does not begin with `# ` even when Ref returns it correctly, and reports that as a missing document; this affects documents authored by other Ref clients and is unchanged in 0.3.1. The canary was archived in Ref after the check (Ref Plans offers archive, not deletion); it still resolves by ID. Interactive TUI/Desktop, gateway, Codex-app-server and isolated-plugin-host journeys remain unclaimed. No automated suite was added.
 
 ## 0.3.1 gate, journal and footer corrections
 

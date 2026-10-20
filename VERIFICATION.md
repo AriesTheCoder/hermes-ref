@@ -2,7 +2,7 @@
 
 ## 0.3.2 external document binding
 
-Checked the uncommitted candidate on `fix/bind-external-documents`, based on `8f2fc9c`, on Linux with Hermes `v0.22.2+964.gdbbcc14`. No installed plugin, settings or live Ref documents were changed by these checks.
+Checked the uncommitted candidate on `fix/bind-external-documents`, based on `e6f2f8c`, on Linux with Hermes `v0.22.2+964.gdbbcc14`. No installed plugin, settings or live Ref documents were changed by these checks.
 
 A disposable offline probe drove the actual handler through a synthetic Ref transport that returns the current paginated `Read` envelope (`<title> (lines a-b of n)\n---\n<page>`) and records `Write prepare/apply`. It passed 11 of 11 checks on the candidate and 2 of 11 on the base source; the base passes are the plugin-authored bind and the no-service-call refusal check. Some base failures reflect the new `title` field and error wording rather than the defect itself; the defect is the first four rows.
 
@@ -18,11 +18,11 @@ A disposable offline probe drove the actual handler through a synthetic Ref tran
 
 The four Python modules compiled, `git diff --check` passed, `hermes plugins validate . --json` returned `ok: true`, `hermes plugins doctor . --ci` passed with one tool and four hooks, and the 0.3.1 gate/journal/footer probe still passed 16 of 16. The probe is a disposable artifact outside the repository; no automated suite, fixtures, runner, test dependency or CI workflow was added.
 
-Live repeat of the failed bind: after merging the candidate to `main` (`afd354d`), `hermes plugins update hermes-ref` pulled it into the tracked install, and a fresh headless CLI session bound the same externally authored document, applied one exact update to its last line and reported `ready: true, updated: true`; an independent Ref client read the new line back. The bind result carried `title` from the page header. Two observations about the host: `hermes chat` sessions are served by the running host gateway, and `hermes plugins update` does not reload that gateway's loaded plugin modules, so the first repeat still ran 0.3.1 code; the gateway's `reload-plugins` control-socket request (the one `hermes plugins enable/disable` sends) reloaded hermes-ref without a gateway restart, after which the repeat passed.
+Live repeat of the failed bind: after merging the candidate to `main` (`5a58b51`), `hermes plugins update hermes-ref` pulled it into the tracked install, and a fresh headless CLI session bound the same externally authored document, applied one exact update to its last line and reported `ready: true, updated: true`; an independent Ref client read the new line back. The bind result carried `title` from the page header. Two observations about the host: `hermes chat` sessions are served by the running host gateway, and `hermes plugins update` does not reload that gateway's loaded plugin modules, so the first repeat still ran 0.3.1 code; the gateway's `reload-plugins` control-socket request (the one `hermes plugins enable/disable` sends) reloaded hermes-ref without a gateway restart, after which the repeat passed.
 
 ## 0.3.1 installed activation and live transport acceptance
 
-Checked the installed plugin at `~/.hermes/plugins/hermes-ref`, tracking `main` at `8f2fc9c` unpinned, on Linux with Hermes `v0.22.2+964.gdbbcc14`, model `gpt-6.1-sol` via `openai-codex`, on 2026-10-20. Every session was a fresh headless CLI run (`hermes chat --query-file … -Q --oneshot --source cli`) with default advisory settings and the `ref-plan` grant. No client document was read or changed.
+Checked the installed plugin at `~/.hermes/plugins/hermes-ref`, tracking `main` at `e6f2f8c` unpinned, on Linux with Hermes `v0.22.2+964.gdbbcc14`, model `gpt-6.1-sol` via `openai-codex`, on 2026-10-20. Every session was a fresh headless CLI run (`hermes chat --query-file … -Q --oneshot --source cli`) with default advisory settings and the `ref-plan` grant. No client document was read or changed.
 
 | Step | Observed |
 |---|---|
